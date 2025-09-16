@@ -50,6 +50,7 @@ router.post('/list-prod', verifyToken, upload.array('images', 5), async(req,res)
 
     const newProduct = new Product({title, description, price, image: imageUrls, category, seller});
     await newProduct.save();
+    console.log(newProduct);
 
     await ensureProductQr(newProduct);
 

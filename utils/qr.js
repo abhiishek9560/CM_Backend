@@ -29,13 +29,16 @@ const uploadBufferToCloudinary = (buffer, publicId) =>
 
 
     async function ensureProductQr(product){
+        console.log("inside qr function");
         if(product.qr?.url){
             return {url: product.qr.url, public_id: product.qr.public_id};
         }
 
-        const productURL = `${VITE_API_URL_FRONTEND}/market/product/${product._id}`;
+        
+        const productURL = `https://cm-frontend-virid.vercel.app/market/product/${product._id}`;
         const png = await generateQrPng(productURL);
         const publicId = `qr_${product._id}`;
+        console.log(productURL);
 
 
         const uploaded = await uploadBufferToCloudinary(png, publicId);
@@ -47,6 +50,7 @@ const uploadBufferToCloudinary = (buffer, publicId) =>
         };
 
         await product.save();
+        console.log(product);
 
         return {url: product.qr.url, public_id: product.qr.public_id};
     };
