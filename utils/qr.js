@@ -33,7 +33,7 @@ const uploadBufferToCloudinary = (buffer, publicId) =>
             return {url: product.qr.url, public_id: product.qr.public_id};
         }
 
-        const productURL = `${process.env.VITE_API_URL}/market/product/${product._id}`;
+        const productURL = `${VITE_API_URL_FRONTEND}/market/product/${product._id}`;
         const png = await generateQrPng(productURL);
         const publicId = `qr_${product._id}`;
 
