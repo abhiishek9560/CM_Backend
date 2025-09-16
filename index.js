@@ -33,7 +33,7 @@ app.use('/payment', payment);
 
 
 app.get('/',(req, res)=>{
-    res.send("Hiii");
+    res.send("Hiii, I welcome you on CollegeMarket. You are talking to CM_Backend");
 } )
 app.listen(process.env.PORT, ()=>{
     console.log(`Server is running on port: ${port}`)
