@@ -35,7 +35,7 @@ const uploadBufferToCloudinary = (buffer, publicId) =>
         }
 
         
-        const productURL = `https://cm-frontend-virid.vercel.app/market/product/${product._id}`;
+        const productURL = `https://cm-frontend-virid.vercel.app/product-details/${product._id}`;
         const png = await generateQrPng(productURL);
         const publicId = `qr_${product._id}`;
         console.log(productURL);
