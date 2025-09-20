@@ -55,9 +55,8 @@ router.post('/list-prod', verifyToken, upload.array('images', 5), async(req,res)
     await ensureProductQr(newProduct);
 
     // updating the product count
-    await User.findByIdAndUpdate(
-        seller,
-        {$inc: {totalListings: 1}},
+    await User.findByIdAndUpdate(seller,
+        {$push: {totalListings: newProduct._id}},
         {new:true}
     );
     
