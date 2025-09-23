@@ -8,6 +8,7 @@ const otpStore = {};
 
 // required models
 const User = require('../models/UserModel');
+const Order = require('../models/OrderModel');
 const verifyToken = require('../middlewares/userAuthentication');
 
 
@@ -176,16 +177,7 @@ router.get('/user-details', verifyToken, async(req, res)=> {
     }
 });
 
-router.get('/seller-details/:seller_id', async(req, res)=> {
-    try{
-        const user = await User.findById(req.params.seller_id).select("-password");
-        if(!user) return res.status(404).json({message: "User not found"});
 
-        res.status(200).json({user});
-    }catch(error){
-        res.status(500).json({message: error.message});
-    }
-});
 
 router.get('/is-loggedin', verifyToken, async(req, res)=> {
     try{
@@ -272,8 +264,64 @@ router.get("/get-seller", async(req,res)=>{
         console.log(error.message);
         res.status(500).json("Error fetching seller");
     }
-})
+});
 
 
+
+
+router.get('/seller-details/:seller_id', async(req, res)=> {
+    try{
+        const user = await User.findById(req.params.seller_id).select("-password");
+        if(!user) return res.status(404).json({message: "User not found"});
+
+        res.status(200).json({user});
+    }catch(error){
+        res.status(500).json({message: error.message});
+    }
+});
+
+
+
+router.get("/totalListings/:userId", async(req, res)=>{
+    try{
+        const {userId} = req.params;
+        const user = await User.findById(userId).populate("totalListings");
+
+        if(!user){
+            return res.status(404).json({success: false, message: "User not found"});
+        }
+
+        res.status(200).json({
+            success:true,
+            products: user.totalListings,
+        })
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+
+
+//fetching all orders of a user
+router.get("/orders/:userId", async(req,res)=>{
+    try{
+        const orders = await Order.find({buyer: req.params.userId})
+        .populate("product")
+        .populate("seller", "name");
+
+        if(!orders){
+            return res.status(200).json({success:false, message:"User not found"});
+        }
+
+        res.status(200).json({
+            success:true,
+            orders: orders,
+        })
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({success:false, message:"Server  error"});
+    }
+});
 
 module.exports = router
