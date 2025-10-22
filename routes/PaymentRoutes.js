@@ -48,7 +48,7 @@ router.post("/create-order", verifyToken, async(req,res)=>{
             deliveryAddress,
             amount: amount,
             status:"Pending",
-            paymentInfo: {razorpayOrderId: razorpayOrder.id},
+            paymentInfo: {razorpay_order_id: razorpayOrder.id},
         });
 
         res.json({
