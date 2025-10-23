@@ -186,22 +186,19 @@
 
 
 // using resend
-const Resend = require('resend')
+// mailer.js
+const { Resend } = require("resend");
 const QRCode = require("qrcode");
-// const jwt = require("jsonwebtoken");
-
-// import { Resend } from "resend";
-// import QRCode from "qrcode";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Generate QR for order (same as before)
-export async function generateDeliveryQR(deliveryLink) {
+/* -------------------- QR GENERATION -------------------- */
+async function generateDeliveryQR(deliveryLink) {
   return QRCode.toDataURL(deliveryLink);
 }
 
-/* -------------------- OTP MAIL -------------------- */
-export async function sendOtpEmail(to, otp) {
+/* -------------------- OTP EMAIL -------------------- */
+async function sendOtpEmail(to, otp) {
   try {
     await resend.emails.send({
       from: "College Market <onboarding@resend.dev>",
@@ -209,20 +206,19 @@ export async function sendOtpEmail(to, otp) {
       subject: "Your OTP Code",
       html: `<p>Hello,</p><p>Your OTP code is: <b>${otp}</b></p><p>It is valid for 5 minutes.</p>`,
     });
+    console.log("✅ OTP email sent to", to);
     return { success: true };
   } catch (err) {
-    console.error("Error sending OTP:", err);
+    console.error("❌ Error sending OTP:", err);
     return { success: false, error: err.message || err };
   }
 }
 
-/* ---------------- ORDER CONFIRMATION EMAIL ---------------- */
-export async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
+/* -------------------- ORDER CONFIRMATION EMAIL -------------------- */
+async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
   try {
     const deliveryLink = `http://localhost:5173/delivery-confirmation/${order._id}`;
     const qrDataUrl = await generateDeliveryQR(deliveryLink);
-
-    const base64Data = qrDataUrl.split(",")[1];
 
     const buyerHtml = `
       <div style="font-family: Arial, sans-serif; color:#333;">
@@ -261,15 +257,16 @@ export async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order
       html: sellerHtml,
     });
 
+    console.log("✅ Order confirmation emails sent.");
     return { success: true, deliveryLink };
   } catch (err) {
-    console.error("Error sending order confirmation:", err);
+    console.error("❌ Error sending order confirmation:", err);
     return { success: false, error: err.message || err };
   }
 }
 
-
+/* -------------------- EXPORT FUNCTIONS -------------------- */
 module.exports = {
+  sendOtpEmail,
   sendOrderConfirmationWithQR,
-   // export if needed elsewhere
 };
