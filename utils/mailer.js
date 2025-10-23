@@ -186,7 +186,7 @@
 
 
 // using resend
-const resend = require('resend')
+const Resend = require('resend')
 const QRCode = require("qrcode");
 // const jwt = require("jsonwebtoken");
 
