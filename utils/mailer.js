@@ -186,12 +186,12 @@
 
 
 // using resend
-// const resend = require('resend')
-// const QRCode = require("qrcode");
+const resend = require('resend')
+const QRCode = require("qrcode");
 // const jwt = require("jsonwebtoken");
 
-import { Resend } from "resend";
-import QRCode from "qrcode";
+// import { Resend } from "resend";
+// import QRCode from "qrcode";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
