@@ -100,13 +100,14 @@ router.post("/verify-payment", async(req,res)=>{
 
             // await sendOrderConfirmationWithQR(buyer.email, seller.email, order);
             // sending mail asynchronously
+            console.log(buyer.email, seller.email);
             sendOrderConfirmationWithQR(buyer.email, seller.email, order)
             .then(result => {
                 if(!result.success) console.error("Email send failed", result.error)
                 else console.log("Email sent successfully");
             })
             .catch(error => console.error("Email send failed", error));
-            
+            console.log('email sent');
             
             
         }else{
