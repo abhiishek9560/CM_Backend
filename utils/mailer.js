@@ -141,7 +141,8 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 
     // send buyer email (with QR inline)
     await transporter.sendMail({
-      from: `"College Market" <reviewit124@gmail.com>`,
+      // from: `"College Market" <reviewit124@gmail.com>`,  
+      from: process.env.EMAIL_USER,
       to: buyerEmail,
       subject: `Order Confirmed — ${order.orderID || order._id}`,
       html: buyerHtml,
@@ -156,7 +157,8 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 
     // send seller email (no inline QR necessary, but link included)
     await transporter.sendMail({
-      from: `"College Market" <reviewit124@gmail.com>`,
+      // from: `"College Market" <reviewit124@gmail.com>`,
+      from: process.env.EMAIL_USER,
       to: sellerEmail,
       subject: `New Order Received — ${order.orderID || order._id}`,
       html: sellerHtml,
@@ -168,6 +170,9 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
     return { success: false, error: err.message || err };
   }
 }
+
+
+
 
 module.exports = {
   sendOrderConfirmationWithQR,
