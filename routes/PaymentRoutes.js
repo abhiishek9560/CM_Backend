@@ -87,16 +87,28 @@ router.post("/verify-payment", async(req,res)=>{
                 status: "Reserved",
             });
 
-            const buyer = await User.findById(order.buyer);
-            const seller = await User.findById(order.seller);
 
-            await sendOrderConfirmationWithQR(buyer.email, seller.email, order);
-            
-            
+
             res.json({
                 success:true,
                 order
             });
+
+
+            const buyer = await User.findById(order.buyer);
+            const seller = await User.findById(order.seller);
+
+            // await sendOrderConfirmationWithQR(buyer.email, seller.email, order);
+            // sending mail asynchronously
+            sendOrderConfirmationWithQR(buyer.email, seller.email, order)
+            .then(result => {
+                if(!result.success) console.error("Email send failed", result.error)
+                else console.log("Email sent successfully");
+            })
+            .catch(error => console.error("Email send failed", error));
+            
+            
+            
         }else{
             return res.status(400).json({success:false, message: "Invalid Signature"});
         }
