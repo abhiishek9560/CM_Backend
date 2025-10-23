@@ -60,35 +60,36 @@
 
 
 
-// utils/mailer.js
-const nodemailer = require("nodemailer");
-const QRCode = require("qrcode");
-const jwt = require("jsonwebtoken");
+// // utils/mailer.js
+// const nodemailer = require("nodemailer");
+// const QRCode = require("qrcode");
+// const jwt = require("jsonwebtoken");
 
 
-const transporter = nodemailer.createTransport({
-  service: "gmail", // change if using another provider
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  },
-});
 
-// helper to generate signed delivery token
-function generateDeliveryToken(orderId, sellerId) {
-  return jwt.sign(
-    { orderId, sellerId, purpose: "delivery" },
-    "Abhi_SECRET_KEY",
-    { expiresIn: process.env.JWT_DELIVERY_EXPIRES || "7d" }
-  );
-}
+// const transporter = nodemailer.createTransport({
+//   service: "gmail", // change if using another provider
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASSWORD
+//   },
+// });
 
-async function generateDeliveryQR(deliveryLink) {
-  // returns base64 data url
-  return QRCode.toDataURL(deliveryLink);
-}
+// // helper to generate signed delivery token
+// function generateDeliveryToken(orderId, sellerId) {
+//   return jwt.sign(
+//     { orderId, sellerId, purpose: "delivery" },
+//     "Abhi_SECRET_KEY",
+//     { expiresIn: process.env.JWT_DELIVERY_EXPIRES || "7d" }
+//   );
+// }
 
-// send confirmation to buyer (with QR inline) and notify seller
+// async function generateDeliveryQR(deliveryLink) {
+//   // returns base64 data url
+//   return QRCode.toDataURL(deliveryLink);
+// }
+
+// // send confirmation to buyer (with QR inline) and notify seller
 // async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 //   try {
     
@@ -172,41 +173,103 @@ async function generateDeliveryQR(deliveryLink) {
 // }
 
 
-async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
+
+// module.exports = { sendOrderConfirmationWithQR };
+
+
+
+
+
+
+
+
+
+
+// using resend
+// const resend = require('resend')
+// const QRCode = require("qrcode");
+// const jwt = require("jsonwebtoken");
+
+import { Resend } from "resend";
+import QRCode from "qrcode";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Generate QR for order (same as before)
+export async function generateDeliveryQR(deliveryLink) {
+  return QRCode.toDataURL(deliveryLink);
+}
+
+/* -------------------- OTP MAIL -------------------- */
+export async function sendOtpEmail(to, otp) {
   try {
-    // console.log("📧 Sending simple emails to:", buyerEmail, sellerEmail);
-
-    // Buyer email
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: buyerEmail,
-      subject: `Order Confirmed — ${order.orderID || order._id}`,
-      text: `Hi there! Your order ${order.orderID || order._id} has been confirmed successfully.\n\nAmount: ₹${order.amount}\nDelivery Address: ${order.deliveryAddress?.completeAddress}\n\nThank you for shopping with College Market!`,
+    await resend.emails.send({
+      from: "College Market <onboarding@resend.dev>",
+      to,
+      subject: "Your OTP Code",
+      html: `<p>Hello,</p><p>Your OTP code is: <b>${otp}</b></p><p>It is valid for 5 minutes.</p>`,
     });
-
-    // Seller email
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: sellerEmail,
-      subject: `New Order Received — ${order.orderID || order._id}`,
-      text: `Hello! You have received a new order (${order.orderID || order._id}).\n\nAmount: ₹${order.amount}\nDelivery Address: ${order.deliveryAddress?.completeAddress}\n\nPlease prepare the product for delivery.`,
-    });
-
-    console.log("✅ Simple emails sent successfully");
     return { success: true };
   } catch (err) {
-    console.error("❌ Error in sendOrderConfirmationWithQR:", err);
+    console.error("Error sending OTP:", err);
     return { success: false, error: err.message || err };
   }
 }
 
-module.exports = { sendOrderConfirmationWithQR };
+/* ---------------- ORDER CONFIRMATION EMAIL ---------------- */
+export async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
+  try {
+    const deliveryLink = `http://localhost:5173/delivery-confirmation/${order._id}`;
+    const qrDataUrl = await generateDeliveryQR(deliveryLink);
 
+    const base64Data = qrDataUrl.split(",")[1];
 
+    const buyerHtml = `
+      <div style="font-family: Arial, sans-serif; color:#333;">
+        <h2>Order Confirmed — ${order.orderID || order._id}</h2>
+        <p>Thanks for your purchase. Your order has been confirmed.</p>
+        <p>Total: ₹${order.amount}</p>
+        <p>Delivery Address: ${order.deliveryAddress.completeAddress}</p>
+        <p>Show this QR to the seller:</p>
+        <img src="${qrDataUrl}" width="200" />
+      </div>
+    `;
 
+    const sellerHtml = `
+      <div style="font-family: Arial, sans-serif; color:#333;">
+        <h2>New Order — ${order.orderID || order._id}</h2>
+        <p>You have received a new order. Please prepare the item for delivery.</p>
+        <p>Total: ₹${order.amount}</p>
+        <p>Delivery Address: ${order.deliveryAddress.completeAddress}</p>
+        <p>Delivery confirmation link: <a href="${deliveryLink}">${deliveryLink}</a></p>
+      </div>
+    `;
+
+    // send to buyer
+    await resend.emails.send({
+      from: "College Market <onboarding@resend.dev>",
+      to: buyerEmail,
+      subject: `Order Confirmed — ${order.orderID || order._id}`,
+      html: buyerHtml,
+    });
+
+    // send to seller
+    await resend.emails.send({
+      from: "College Market <onboarding@resend.dev>",
+      to: sellerEmail,
+      subject: `New Order Received — ${order.orderID || order._id}`,
+      html: sellerHtml,
+    });
+
+    return { success: true, deliveryLink };
+  } catch (err) {
+    console.error("Error sending order confirmation:", err);
+    return { success: false, error: err.message || err };
+  }
+}
 
 
 module.exports = {
   sendOrderConfirmationWithQR,
-  generateDeliveryToken, // export if needed elsewhere
+   // export if needed elsewhere
 };
