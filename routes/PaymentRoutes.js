@@ -216,7 +216,7 @@ router.get("/test-mail", async (req, res) => {
 //mail testing 2
 
 // add near your other routes (copy/paste)
-const nodemailer = require("nodemailer");
+
 
 // debug: print which env keys exist (masked)
 console.log("ENV email user set?:", !!process.env.EMAIL_USER);
