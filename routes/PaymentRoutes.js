@@ -246,7 +246,7 @@ debugTransporter.verify((err, success) => {
 });
 
 // test route
-app.get("/__test_mail", async (req, res) => {
+router.get("/__test_mail", async (req, res) => {
   try {
     const to = req.query.to || process.env.EMAIL_USER; // default to your address
     console.log("Attempting test email to:", to);
