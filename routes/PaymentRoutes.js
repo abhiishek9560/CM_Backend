@@ -205,5 +205,66 @@ router.get("/test-mail", async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+//mail testing 2
+
+// add near your other routes (copy/paste)
+const nodemailer = require("nodemailer");
+
+// debug: print which env keys exist (masked)
+console.log("ENV email user set?:", !!process.env.EMAIL_USER);
+console.log("ENV email pass set?:", !!process.env.EMAIL_PASS || !!process.env.EMAIL_PASSWORD);
+
+// connector: set these names to whatever you used in Railway (EMAIL_PASS or EMAIL_PASSWORD)
+const EMAIL_PASS_KEY = process.env.EMAIL_PASSWORD;
+
+const debugTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: EMAIL_PASS_KEY
+  },
+  // optional debug flags:
+  logger: true,
+  debug: true
+});
+
+// verify transporter and log result
+debugTransporter.verify((err, success) => {
+  if (err) {
+    console.error("Mailer verify FAILED:", err && (err.message || err));
+  } else {
+    console.log("Mailer verify OK:", success);
+  }
+});
+
+// test route
+app.get("/__test_mail", async (req, res) => {
+  try {
+    const to = req.query.to || process.env.EMAIL_USER; // default to your address
+    console.log("Attempting test email to:", to);
+
+    const info = await debugTransporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject: "Railway SMTP test",
+      text: "If you got this, Railway mail works fine."
+    });
+
+    console.log("sendMail info:", info);
+    res.json({ ok: true, info });
+  } catch (err) {
+    console.error("sendMail error:", err && (err.stack || err));
+    res.status(500).json({ ok: false, error: err && err.message });
+  }
+});
+
 module.exports = router
 
