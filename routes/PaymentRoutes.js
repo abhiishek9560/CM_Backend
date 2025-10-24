@@ -179,31 +179,31 @@ router.post("/confirm-order-delivery", async(req,res)=>{
 
 
 // mail testing
-// const nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer");
 
-// const transporter = nodemailer.createTransport({
-//   service: "gmail", // change if using another provider
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASSWORD
-//   },
-// });
+const transporter = nodemailer.createTransport({
+  service: "gmail", // change if using another provider
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
+  },
+});
 
-// router.get("/test-mail", async (req, res) => {
-//   try {
-//     const info = await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
-//       to: "sumityadavanshi9560@gmail.com",
-//       subject: "Test Email from College Market",
-//       text: "If you get this, Gmail SMTP works!"
-//     });
-//     console.log("Mail response:", info);
-//     res.send("Test mail sent!");
-//   } catch (err) {
-//     console.error("Mail error:", err);
-//     res.status(500).send(err.message);
-//   }
-// });
+router.get("/test-mail", async (req, res) => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: "2022btcse004@curaj.ac.in",
+      subject: "Test Email from College Market",
+      text: "If you get this, Gmail SMTP works!"
+    });
+    console.log("Mail response:", info);
+    res.send("Test mail sent!");
+  } catch (err) {
+    console.error("Mail error:", err);
+    res.status(500).send(err.message);
+  }
+});
 
 module.exports = router
 
