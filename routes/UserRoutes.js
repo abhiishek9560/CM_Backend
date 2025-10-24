@@ -86,35 +86,35 @@ router.post('/send-otp', async(req,res) =>{
         otpStore[email] = {otp, expiresAt};
 
         //create the transporter
-        // const transporter = nodemailer.createTransport({
-        //     service: 'gmail',
-        //     auth: {
-        //         user: process.env.EMAIL_USER,
-        //         pass: process.env.EMAIL_PASSWORD
-        //     }
-        // })
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        })
 
-        // const mailOptions = {
-        //     from: 'reviewit124@gmail.com',
-        //     to: email,
-        //     subject: 'Your OTP for the CollegeMarketPlace Sign Up',
-        //     html: `<h2>Hello!</h2><p>Your One-Time Password (OTP) is: <strong>${otp}</strong></p><p>This OTP is valid for 5 minutes.</p>`
+        const mailOptions = {
+            from: 'reviewit124@gmail.com',
+            to: email,
+            subject: 'Your OTP for the CollegeMarketPlace Sign Up',
+            html: `<h2>Hello!</h2><p>Your One-Time Password (OTP) is: <strong>${otp}</strong></p><p>This OTP is valid for 5 minutes.</p>`
 
-        // }
-
-        // await transporter.sendMail(mailOptions);
-        // res.status(200).json({
-        //     otp: otp,
-        //     expiteTime: expiresAt,
-        //     message: `OTP sentt to ${email}`
-        // });
-
-        const result = await sendOtpEmail(email, otp);
-        if (result.success) {
-            res.json({ success: true });
-        } else {
-            res.status(500).json({ success: false, error: result.error });
         }
+
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({
+            otp: otp,
+            expiteTime: expiresAt,
+            message: `OTP sentt to ${email}`
+        });
+
+        // const result = await sendOtpEmail(email, otp);
+        // if (result.success) {
+        //     res.json({ success: true });
+        // } else {
+        //     res.status(500).json({ success: false, error: result.error });
+        // }
     }
     catch(error){
         console.error("Error sending OTP:", error.message);
