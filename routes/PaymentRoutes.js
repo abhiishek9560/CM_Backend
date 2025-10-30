@@ -267,6 +267,8 @@ router.post("/confirm-order-delivery", async(req,res)=>{
 // });
 
 
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 router.get("/test-email", async (req, res) => {
   try {
