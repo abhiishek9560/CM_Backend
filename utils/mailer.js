@@ -201,7 +201,7 @@ async function generateDeliveryQR(deliveryLink) {
 async function sendOtpEmail(to, otp) {
   try {
     await resend.emails.send({
-      from: "College Market <onboarding@resend.dev>",
+      from: "College Market <no-reply@arogyafirst.com>",
       to,
       subject: "Your OTP Code",
       html: `<p>Hello,</p><p>Your OTP code is: <b>${otp}</b></p><p>It is valid for 5 minutes.</p>`,
@@ -243,7 +243,7 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 
     // send to buyer
     await resend.emails.send({
-      from: "College Market <no-reply@arrogyniti.com>",
+      from: "College Market <no-reply@arogyafirst.com>",
       to: buyerEmail,
       subject: `Order Confirmed — ${order.orderID || order._id}`,
       html: buyerHtml,
@@ -251,7 +251,7 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 
     // send to seller
     await resend.emails.send({
-      from: "College Market <no-reply@arrogyniti.com>",
+      from: "College Market <no-reply@arogyafirst.com>",
       to: sellerEmail,
       subject: `New Order Received — ${order.orderID || order._id}`,
       html: sellerHtml,
