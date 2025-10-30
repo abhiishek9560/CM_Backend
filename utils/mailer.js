@@ -192,11 +192,6 @@ const QRCode = require("qrcode");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-/* -------------------- QR GENERATION -------------------- */
-async function generateDeliveryQR(deliveryLink) {
-  return QRCode.toDataURL(deliveryLink);
-}
-
 /* -------------------- OTP EMAIL -------------------- */
 async function sendOtpEmail(to, otp) {
   try {
@@ -214,56 +209,104 @@ async function sendOtpEmail(to, otp) {
   }
 }
 
-/* -------------------- ORDER CONFIRMATION EMAIL -------------------- */
+
+
+async function generateQRBuffer(deliveryLink) {
+  return QRCode.toBuffer(deliveryLink);
+}
+
 async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
   try {
-    const deliveryLink = `http://localhost:5173/delivery-confirmation/${order._id}`;
-    const qrDataUrl = await generateDeliveryQR(deliveryLink);
+    const deliveryLink = `https://college-marketplace.vercel.app/delivery-confirmation/${order._id}`;
+    const qrBuffer = await generateQRBuffer(deliveryLink);
 
+    /* ---------- Professional email template for buyer ---------- */
     const buyerHtml = `
-      <div style="font-family: Arial, sans-serif; color:#333;">
-        <h2>Order Confirmed — ${order.orderID || order._id}</h2>
-        <p>Thanks for your purchase. Your order has been confirmed.</p>
-        <p>Total: ₹${order.amount}</p>
-        <p>Delivery Address: ${order.deliveryAddress.completeAddress}</p>
-        <p>Show this QR to the seller:</p>
-        <img src="${qrDataUrl}" width="200" />
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+        <div style="background-color: #4f46e5; color: white; padding: 16px 24px;">
+          <h2 style="margin: 0;">Order Confirmed ✅</h2>
+          <p style="margin: 0;">Order ID: <b>${order.orderID || order._id}</b></p>
+        </div>
+        <div style="padding: 24px;">
+          <p>Hi there,</p>
+          <p>Your order has been confirmed successfully.</p>
+          <h3 style="color:#4f46e5; margin-bottom: 8px;">Order Details</h3>
+          <ul style="line-height: 1.6;">
+            <li><b>Product:</b> ${order.productName || "N/A"}</li>
+            <li><b>Amount:</b> ₹${order.amount}</li>
+            <li><b>Delivery Address:</b> ${order.deliveryAddress.completeAddress}</li>
+          </ul>
+          <p>Show this QR code to the seller at pickup:</p>
+          <img src="cid:deliveryQR" alt="Delivery QR" width="180" style="margin: 10px 0; border: 1px solid #ccc; border-radius: 8px;" />
+          <p>If the QR doesn't load, <a href="${deliveryLink}">click here</a> to confirm delivery.</p>
+        </div>
+        <div style="background-color: #f3f4f6; padding: 12px; text-align: center; font-size: 13px; color: #555;">
+          <p>College Market Team</p>
+          <p>Need help? Contact support@college-market.com</p>
+        </div>
       </div>
     `;
 
+    /* ---------- Professional email template for seller ---------- */
     const sellerHtml = `
-      <div style="font-family: Arial, sans-serif; color:#333;">
-        <h2>New Order — ${order.orderID || order._id}</h2>
-        <p>You have received a new order. Please prepare the item for delivery.</p>
-        <p>Total: ₹${order.amount}</p>
-        <p>Delivery Address: ${order.deliveryAddress.completeAddress}</p>
-        <p>Delivery confirmation link: <a href="${deliveryLink}">${deliveryLink}</a></p>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+        <div style="background-color: #4f46e5; color: white; padding: 16px 24px;">
+          <h2 style="margin: 0;">New Order Received 📦</h2>
+          <p style="margin: 0;">Order ID: <b>${order.orderID || order._id}</b></p>
+        </div>
+        <div style="padding: 24px;">
+          <p>Hello Seller,</p>
+          <p>You’ve received a new order. Please prepare the item for delivery.</p>
+          <h3 style="color:#4f46e5; margin-bottom: 8px;">Order Details</h3>
+          <ul style="line-height: 1.6;">
+            <li><b>Product:</b> ${order.productName || "N/A"}</li>
+            <li><b>Amount:</b> ₹${order.amount}</li>
+            <li><b>Delivery Address:</b> ${order.deliveryAddress.completeAddress}</li>
+          </ul>
+          <p>View delivery confirmation link below:</p>
+          <a href="${deliveryLink}" style="color:#4f46e5; text-decoration:none;">${deliveryLink}</a>
+        </div>
+        <div style="background-color: #f3f4f6; padding: 12px; text-align: center; font-size: 13px; color: #555;">
+          <p>College Market Team</p>
+          <p>Need help? Contact support@college-market.com</p>
+        </div>
       </div>
     `;
 
-    // send to buyer
-    await resend.emails.send({
+    /* ---------- Send to Buyer ---------- */
+    const buyerRes = await resend.emails.send({
       from: "College Market <no-reply@arogyafirst.com>",
       to: buyerEmail,
       subject: `Order Confirmed — ${order.orderID || order._id}`,
       html: buyerHtml,
+      attachments: [
+        {
+          filename: "delivery-qr.png",
+          content: qrBuffer,
+          content_id: "deliveryQR",
+        },
+      ],
     });
 
-    // send to seller
-    await resend.emails.send({
+    /* ---------- Send to Seller ---------- */
+    const sellerRes = await resend.emails.send({
       from: "College Market <no-reply@arogyafirst.com>",
       to: sellerEmail,
       subject: `New Order Received — ${order.orderID || order._id}`,
       html: sellerHtml,
     });
 
-    console.log("✅ Order confirmation emails sent.");
-    return { success: true, deliveryLink };
+    console.log("✅ Buyer email response:", buyerRes);
+    console.log("✅ Seller email response:", sellerRes);
+    return { success: true };
   } catch (err) {
     console.error("❌ Error sending order confirmation:", err);
     return { success: false, error: err.message || err };
   }
 }
+
+module.exports = { sendOrderConfirmationWithQR };
+
 
 /* -------------------- EXPORT FUNCTIONS -------------------- */
 module.exports = {

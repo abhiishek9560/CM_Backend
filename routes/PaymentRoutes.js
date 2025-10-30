@@ -171,7 +171,7 @@ router.post("/confirm-order-delivery", async(req,res)=>{
     
     return res.json({
         success:true,
-        message: "Order delviered Successfully",
+        message: "Order delivered Successfully",
         order
     })
 });
