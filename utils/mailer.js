@@ -243,7 +243,7 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 
     // send to buyer
     await resend.emails.send({
-      from: "College Market <onboarding@resend.dev>",
+      from: "College Market <no-reply@arrogyniti.com>",
       to: buyerEmail,
       subject: `Order Confirmed — ${order.orderID || order._id}`,
       html: buyerHtml,
@@ -251,7 +251,7 @@ async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
 
     // send to seller
     await resend.emails.send({
-      from: "College Market <onboarding@resend.dev>",
+      from: "College Market <no-reply@arrogyniti.com>",
       to: sellerEmail,
       subject: `New Order Received — ${order.orderID || order._id}`,
       html: sellerHtml,
