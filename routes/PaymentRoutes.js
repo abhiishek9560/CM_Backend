@@ -179,31 +179,31 @@ router.post("/confirm-order-delivery", async(req,res)=>{
 
 
 // mail testing
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail", // change if using another provider
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  },
-});
+// const transporter = nodemailer.createTransport({
+//   service: "gmail", // change if using another provider
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASSWORD
+//   },
+// });
 
-router.get("/test-mail", async (req, res) => {
-  try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: "2022btcse004@curaj.ac.in",
-      subject: "Test Email from College Market Railway Backend",
-      text: "If you received this, your Railway + Gmail setup works fine!"
-    });
-    console.log("✅ Test email sent successfully");
-    res.send("Test mail sent successfully!");
-  } catch (err) {
-    console.error("Mail error:", err);
-    res.status(500).send(err.message);
-  }
-});
+// router.get("/test-mail", async (req, res) => {
+//   try {
+//     const info = await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to: "2022btcse004@curaj.ac.in",
+//       subject: "Test Email from College Market Railway Backend",
+//       text: "If you received this, your Railway + Gmail setup works fine!"
+//     });
+//     console.log("✅ Test email sent successfully");
+//     res.send("Test mail sent successfully!");
+//   } catch (err) {
+//     console.error("Mail error:", err);
+//     res.status(500).send(err.message);
+//   }
+// });
 
 
 
@@ -219,52 +219,70 @@ router.get("/test-mail", async (req, res) => {
 
 
 // debug: print which env keys exist (masked)
-console.log("ENV email user set?:", !!process.env.EMAIL_USER);
-console.log("ENV email pass set?:", !!process.env.EMAIL_PASS || !!process.env.EMAIL_PASSWORD);
+// console.log("ENV email user set?:", !!process.env.EMAIL_USER);
+// console.log("ENV email pass set?:", !!process.env.EMAIL_PASS || !!process.env.EMAIL_PASSWORD);
 
 // connector: set these names to whatever you used in Railway (EMAIL_PASS or EMAIL_PASSWORD)
-const EMAIL_PASS_KEY = process.env.EMAIL_PASSWORD;
+// const EMAIL_PASS_KEY = process.env.EMAIL_PASSWORD;
 
-const debugTransporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: EMAIL_PASS_KEY
-  },
-  // optional debug flags:
-  logger: true,
-  debug: true
-});
+// const debugTransporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: EMAIL_PASS_KEY
+//   },
+//   // optional debug flags:
+//   logger: true,
+//   debug: true
+// });
 
 // verify transporter and log result
-debugTransporter.verify((err, success) => {
-  if (err) {
-    console.error("Mailer verify FAILED:", err && (err.message || err));
-  } else {
-    console.log("Mailer verify OK:", success);
-  }
-});
+// debugTransporter.verify((err, success) => {
+//   if (err) {
+//     console.error("Mailer verify FAILED:", err && (err.message || err));
+//   } else {
+//     console.log("Mailer verify OK:", success);
+//   }
+// });
 
 // test route
-router.get("/__test_mail", async (req, res) => {
+// router.get("/__test_mail", async (req, res) => {
+//   try {
+//     const to = req.query.to || process.env.EMAIL_USER; // default to your address
+//     console.log("Attempting test email to:", to);
+
+//     const info = await debugTransporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to,
+//       subject: "Railway SMTP test",
+//       text: "If you got this, Railway mail works fine."
+//     });
+
+//     console.log("sendMail info:", info);
+//     res.json({ ok: true, info });
+//   } catch (err) {
+//     console.error("sendMail error:", err && (err.stack || err));
+//     res.status(500).json({ ok: false, error: err && err.message });
+//   }
+// });
+
+
+
+router.get("/test-email", async (req, res) => {
   try {
-    const to = req.query.to || process.env.EMAIL_USER; // default to your address
-    console.log("Attempting test email to:", to);
-
-    const info = await debugTransporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject: "Railway SMTP test",
-      text: "If you got this, Railway mail works fine."
+    const data = await resend.emails.send({
+      from: "College Market <no-reply@arogyafirst.com>",
+      to: "2022btcse004@curaj.ac.in",
+      subject: "Test Email",
+      html: "<h3>It works!</h3>",
     });
-
-    console.log("sendMail info:", info);
-    res.json({ ok: true, info });
+    res.json({ success: true, data });
   } catch (err) {
-    console.error("sendMail error:", err && (err.stack || err));
-    res.status(500).json({ ok: false, error: err && err.message });
+    console.error("Email test error:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 module.exports = router
 
