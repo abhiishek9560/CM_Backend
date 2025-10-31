@@ -217,7 +217,7 @@ async function generateQRBuffer(deliveryLink) {
 
 async function sendOrderConfirmationWithQR(buyerEmail, sellerEmail, order) {
   try {
-    const deliveryLink = `https://college-marketplace.vercel.app/delivery-confirmation/${order._id}`;
+    const deliveryLink = `https://cm-frontend-virid.vercel.app/delivery-confirmation/${order._id}`;
     const qrBuffer = await generateQRBuffer(deliveryLink);
 
     /* ---------- Professional email template for buyer ---------- */
