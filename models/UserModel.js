@@ -68,6 +68,17 @@ const UserSchema = new Schema({
         }
     ],
 
+    kyc: {
+        linkedAccountId:{ type: String, default: null},
+        onBoardingURL:{type: String, default: null},
+        kycStatus:{
+            type:String,
+            enum:['NOT_STARTED','PENDING','UNDER_REVIEW','VERIFIED','REJECTED','NEEDS_ACTION'],
+            default:'NOT_STARTED',
+        },
+        lastUpdated:{type: Date, default: Date.now},
+    },
+
     createdAt:{
         type:Date,
         default:Date.now,

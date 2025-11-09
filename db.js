@@ -5,7 +5,7 @@ const mongoose = require('mongoose')
 const connectDB = async ()=> {
     try{
 
-        //localhost database
+        // localhost database
         // await mongoose.connect("mongodb://localhost:27017/CollegeMarketPlace");
         // console.log("Database connected");
 
